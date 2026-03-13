@@ -1,0 +1,22 @@
+{
+  "name": "tool_aware_smoke",
+  "iterations": 100,
+  "requests": [
+    {
+      "steps": [
+        {"type": "model", "latency_ms": 120},
+        {"type": "tool", "tool": "search"},
+        {"type": "orchestration", "latency_ms": 8},
+        {"type": "model", "latency_ms": 90}
+      ]
+    },
+    {
+      "steps": [
+        {"type": "model", "latency_ms": 95},
+        {"type": "tool", "tool": "db"},
+        {"type": "orchestration", "latency_ms": 6},
+        {"type": "model", "latency_ms": 110}
+      ]
+    }
+  ]
+}
