@@ -560,5 +560,25 @@
         });
       })();
     </script>
+      <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+
+      (function () {
+        var host = window.location.hostname;
+        var isAnalyticsHost =
+          host === "servingops.com" ||
+          host === "www.servingops.com" ||
+          /\.vercel\.app$/.test(host);
+
+        if (!isAnalyticsHost) {
+          return;
+        }
+
+        var script = document.createElement("script");
+        script.defer = true;
+        script.src = "/_vercel/insights/script.js";
+        document.head.appendChild(script);
+      })();
+    </script>
   </body>
 </html>
