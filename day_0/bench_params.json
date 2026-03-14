@@ -1,14 +1,12 @@
 {
-  "short": [
-    {
-      "backend": "vllm",
-      "dataset_name": "random",
-      "num_prompts": 400,
-      "request_rate": "inf",
-      "burstiness": 1.0,
-      "random_input_len": 256,
-      "random_output_len": 128,
-      "disable_shuffle": true
-    }
-  ]
+  "short": {
+    "backend": "vllm",
+    "dataset_name": "random",
+    "num_prompts": 400,
+    "request_rate": "inf",
+    "burstiness": 1.0,
+    "random_input_len": 256,
+    "random_output_len": 128,
+    "disable_shuffle": true
+  }
 }

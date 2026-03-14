@@ -2,9 +2,9 @@
 
 This folder gives you one reproducible starting point for the first Perfsmith experiment:
 
-- one model: `Qwen/Qwen3.5-4B`
+- one model: `Qwen/Qwen3-4B`
 - one workload: `256` input tokens, `128` output tokens, `400` prompts
-- one search space: six vLLM serving configs
+- one search space: three conservative vLLM serving configs
 - two SLA tiers: `strict` and `balanced`
 
 The goal is not to find the global optimum. The goal is to produce one clean dataset you can bring back into Perfsmith.
@@ -12,10 +12,10 @@ The goal is not to find the global optimum. The goal is to produce one clean dat
 ## Files
 
 - `Dockerfile`: builds a GPU-ready image from the official `vllm/vllm-openai` base image and installs the local Perfsmith CLI.
-- `serve_params.json`: a six-config vLLM sweep tuned for a slightly longer day-0 run.
-- `bench_params.json`: the short synthetic workload definition used by `vllm bench sweep serve_sla` with `400` prompts.
+- `serve_params.json`: a conservative three-config vLLM sweep tuned for stability on day 0.
+- `bench_params.json`: the short synthetic workload definition used by `vllm bench serve` with `400` prompts.
 - `sla_params.json`: the strict and balanced p99 limits.
-- `run_day0.sh`: runs the sweep, summarizes results, and generates Perfsmith optimize/report artifacts.
+- `run_day0.sh`: starts one server per config, runs a benchmark concurrency ladder, saves raw `run=*.json` files, then summarizes and reports.
 
 
 ## Build the image
@@ -26,7 +26,7 @@ From the repo root:
 docker build -f day_0/Dockerfile -t perfsmith-day0 .
 ```
 
-The image is pinned to `vllm/vllm-openai:v0.16.0`.
+The image is pinned to `vllm/vllm-openai:v0.17.1`.
 
 ## Run it on a GPU machine
 
@@ -56,16 +56,24 @@ cd /workspace/perfsmith
 GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
 ```
 
-By default, the script now runs `NUM_RUNS=2`. If you need a quicker pass, override it:
+By default, the script now runs `NUM_RUNS=1` across the concurrency ladder `1,2,4,8`. Once the smoke pass works, increase the repeat count or extend the ladder:
 
 ```bash
-NUM_RUNS=1 GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
+NUM_RUNS=2 GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
+```
+
+The default server command disables prefix caching, enforces eager execution, and disables request logging for this synthetic benchmark.
+
+Optional override if you want to explore more concurrency levels:
+
+```bash
+CONCURRENCY_VALUES=1,2,4,8,12,16 GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
 ```
 
 Optional override if you want to test a different model later:
 
 ```bash
-MODEL_ID=Qwen/Qwen3.5-4B GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
+MODEL_ID=Qwen/Qwen3-4B GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
 ```
 
 Replace `0.65` with the actual hourly rate from Vast.ai.
@@ -74,11 +82,13 @@ Replace `0.65` with the actual hourly rate from Vast.ai.
 
 1. Writes a resolved `serve_params` file with your chosen `MODEL_ID`.
 2. Captures system metadata into `artifacts/day_0/system_info.txt`.
-3. Runs `vllm bench sweep serve_sla`.
-4. Converts raw `run=*.json` artifacts into `artifacts/day_0/summary.csv`.
-5. Generates a workload spec for the short benchmark and requires the same repeat count during verification.
-6. Runs `perfsmith optimize` for `strict` and `balanced` tiers.
-7. Writes markdown reports into `artifacts/day_0/reports/`.
+3. Starts `vllm serve` in the background for one config at a time and waits for `/v1/models` to become ready.
+4. Runs `vllm bench serve` against that live server across a fixed concurrency ladder and saves `run=*.json` artifacts.
+5. Enriches each saved result with the serve config and benchmark metadata Perfsmith expects.
+6. Converts the raw `run=*.json` artifacts into `artifacts/day_0/summary.csv`.
+7. Generates a workload spec for the short benchmark and requires the same repeat count during verification.
+8. Runs `perfsmith optimize` for `strict` and `balanced` tiers.
+9. Writes markdown reports into `artifacts/day_0/reports/`.
 
 ## Expected outputs
 
@@ -106,4 +116,4 @@ Bring back:
 
 ## Important limitation
 
-`verification_min_runs` now follows `NUM_RUNS`, which defaults to `2`. That makes the first winner more defensible while still keeping the run bounded. If the sweep is too slow, drop back to `NUM_RUNS=1`.
+`verification_min_runs` follows `NUM_RUNS`, which defaults to `1` for the first smoke pass. Once the run is stable, use `NUM_RUNS=2` for a more defensible result.

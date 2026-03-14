@@ -1,6 +1,6 @@
 # Day-0 image: official vLLM runtime plus the local Perfsmith CLI.
-# Day-0 image is pinned to vLLM 0.16.0 by default.
-ARG VLLM_IMAGE=vllm/vllm-openai:v0.16.0
+# Day-0 image is pinned to vLLM 0.17.1 by default.
+ARG VLLM_IMAGE=vllm/vllm-openai:v0.17.1
 FROM ${VLLM_IMAGE}
 
 WORKDIR /workspace/perfsmith
