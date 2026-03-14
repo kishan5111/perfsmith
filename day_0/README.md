@@ -3,8 +3,8 @@
 This folder gives you one reproducible starting point for the first Perfsmith experiment:
 
 - one model: `Qwen/Qwen3.5-4B`
-- one workload: `256` input tokens, `128` output tokens, `250` prompts
-- one search space: four vLLM serving configs
+- one workload: `256` input tokens, `128` output tokens, `400` prompts
+- one search space: six vLLM serving configs
 - two SLA tiers: `strict` and `balanced`
 
 The goal is not to find the global optimum. The goal is to produce one clean dataset you can bring back into Perfsmith.
@@ -12,43 +12,11 @@ The goal is not to find the global optimum. The goal is to produce one clean dat
 ## Files
 
 - `Dockerfile`: builds a GPU-ready image from the official `vllm/vllm-openai` base image and installs the local Perfsmith CLI.
-- `serve_params.json`: the small vLLM config sweep for day 0.
-- `bench_params.json`: the short synthetic workload definition used by `vllm bench sweep serve_sla`.
+- `serve_params.json`: a six-config vLLM sweep tuned for a slightly longer day-0 run.
+- `bench_params.json`: the short synthetic workload definition used by `vllm bench sweep serve_sla` with `400` prompts.
 - `sla_params.json`: the strict and balanced p99 limits.
 - `run_day0.sh`: runs the sweep, summarizes results, and generates Perfsmith optimize/report artifacts.
 
-## Docker concepts you should know
-
-### Image vs container
-
-- An image is a template.
-- A container is a running instance of that template.
-
-You build an image once, then run containers from it.
-
-### Why `FROM`
-
-`FROM vllm/vllm-openai:v0.16.0` means "start from an image that already knows how to run vLLM on GPUs." That saves you from installing CUDA and vLLM by hand, while keeping the runtime pinned.
-
-### Why `WORKDIR`
-
-`WORKDIR /workspace/perfsmith` sets the default directory inside the container. Every later command runs there unless you change it.
-
-### Why `COPY`
-
-`COPY` moves files from your repo into the image at build time. Here we copy only what day 0 needs: the package, fixtures, and this folder.
-
-### Why `RUN`
-
-`RUN` executes during image build. We use it to install the local Perfsmith package so the `perfsmith` CLI is available inside the container.
-
-### Why `ENTRYPOINT`
-
-`ENTRYPOINT ["/bin/bash"]` makes the container start in a shell. For day 0 this is simpler than hiding everything behind a fixed entrypoint.
-
-### Why `.dockerignore`
-
-`.dockerignore` keeps the build context small. Without it, Docker would send `.git`, raw data, tests, and other unnecessary files into the build.
 
 ## Build the image
 
@@ -88,6 +56,12 @@ cd /workspace/perfsmith
 GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
 ```
 
+By default, the script now runs `NUM_RUNS=2`. If you need a quicker pass, override it:
+
+```bash
+NUM_RUNS=1 GPU_COST_PER_HOUR=0.65 ./day_0/run_day0.sh
+```
+
 Optional override if you want to test a different model later:
 
 ```bash
@@ -102,7 +76,7 @@ Replace `0.65` with the actual hourly rate from Vast.ai.
 2. Captures system metadata into `artifacts/day_0/system_info.txt`.
 3. Runs `vllm bench sweep serve_sla`.
 4. Converts raw `run=*.json` artifacts into `artifacts/day_0/summary.csv`.
-5. Generates a workload spec for the short benchmark.
+5. Generates a workload spec for the short benchmark and requires the same repeat count during verification.
 6. Runs `perfsmith optimize` for `strict` and `balanced` tiers.
 7. Writes markdown reports into `artifacts/day_0/reports/`.
 
@@ -132,4 +106,4 @@ Bring back:
 
 ## Important limitation
 
-`verification_min_runs` is set to `1` in the generated workload spec so day 0 stays cheap. That means the first winner is directional, not final. Once we see the day-0 frontier, we should rerun the best candidate with more repeats.
+`verification_min_runs` now follows `NUM_RUNS`, which defaults to `2`. That makes the first winner more defensible while still keeping the run bounded. If the sweep is too slow, drop back to `NUM_RUNS=1`.

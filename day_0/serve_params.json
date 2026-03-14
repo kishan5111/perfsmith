@@ -26,5 +26,19 @@
     "max_model_len": 1024,
     "max_num_seqs": 128,
     "max_num_batched_tokens": 16384
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.95,
+    "max_model_len": 1024,
+    "max_num_seqs": 128,
+    "max_num_batched_tokens": 16384
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.95,
+    "max_model_len": 1024,
+    "max_num_seqs": 256,
+    "max_num_batched_tokens": 32768
   }
 ]

@@ -3,7 +3,7 @@
     {
       "backend": "vllm",
       "dataset_name": "random",
-      "num_prompts": 250,
+      "num_prompts": 400,
       "request_rate": "inf",
       "burstiness": 1.0,
       "random_input_len": 256,

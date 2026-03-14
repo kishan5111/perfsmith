@@ -6,7 +6,7 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-$ROOT_DIR/artifacts/day_0}"
 RAW_DIR="$OUTPUT_ROOT/raw"
 REPORT_DIR="$OUTPUT_ROOT/reports"
 GPU_COST_PER_HOUR="${GPU_COST_PER_HOUR:-0}"
-NUM_RUNS="${NUM_RUNS:-1}"
+NUM_RUNS="${NUM_RUNS:-2}"
 MODEL_ID="${MODEL_ID:-Qwen/Qwen3.5-4B}"
 
 mkdir -p "$RAW_DIR" "$REPORT_DIR"
@@ -59,7 +59,7 @@ vllm bench sweep serve_sla \
 echo "[day_0] summarizing raw runs"
 perfsmith summarize --input "$RAW_DIR" --out "$OUTPUT_ROOT/summary.csv"
 
-python3 - "$OUTPUT_ROOT/summary.csv" "$OUTPUT_ROOT/workload_short.json" "$GPU_COST_PER_HOUR" <<'PY'
+python3 - "$OUTPUT_ROOT/summary.csv" "$OUTPUT_ROOT/workload_short.json" "$GPU_COST_PER_HOUR" "$NUM_RUNS" <<'PY'
 import csv
 import json
 import sys
@@ -68,6 +68,7 @@ from pathlib import Path
 summary_path = Path(sys.argv[1])
 out_path = Path(sys.argv[2])
 gpu_cost = float(sys.argv[3])
+num_runs = int(sys.argv[4])
 rows = list(csv.DictReader(summary_path.open("r", encoding="utf-8", newline="")))
 if not rows:
     raise SystemExit("summary.csv has no rows")
@@ -79,9 +80,9 @@ payload = {
     "expected_max_output_tokens": 128,
     "summary_table": str(summary_path),
     "gpu_cost_per_hour": gpu_cost,
-    "top_k_verify": 2,
-    "prune_top_n": 8,
-    "verification_min_runs": 1,
+    "top_k_verify": 3,
+    "prune_top_n": 10,
+    "verification_min_runs": max(1, num_runs),
     "model_id": first.get("model_id") or None,
 }
 out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
