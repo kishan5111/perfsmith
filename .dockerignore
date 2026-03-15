@@ -5,7 +5,5 @@ __pycache__/
 .DS_Store
 .venv/
 artifacts/
-data/
-context/
-index.html
+notes/
 tests/

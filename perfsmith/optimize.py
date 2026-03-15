@@ -10,7 +10,7 @@ from typing import Any
 from .constants import DEFAULT_PRUNE_TOP_N, SLA_TIERS
 from .summarize import load_table
 from .surrogate import prune_with_surrogate
-from .types import CandidateEvaluation, WorkloadSpecV0
+from .types import CandidateEvaluation, WorkloadSpec
 from .utils import build_run_id, coerce_float, coerce_int, ensure_parent, now_utc_iso, stddev
 
 
@@ -130,16 +130,16 @@ def _pareto_front(candidates: list[CandidateEvaluation]) -> list[CandidateEvalua
     return result
 
 
-def optimize_workload(
-    workload_spec: WorkloadSpecV0,
+def optimize_atlas(
+    atlas_path: Path,
+    workload_spec: WorkloadSpec,
     sla_tier: str,
-    output_root: Path | None = None,
-    run_id: str | None = None,
+    gpu_cost_per_hour: float,
+    out_path: Path,
     created_at: str | None = None,
 ) -> dict[str, Any]:
     tier_field = _tier_field(sla_tier)
-    table_path = Path(workload_spec.summary_table)
-    rows = load_table(table_path)
+    rows = load_table(Path(atlas_path))
 
     rows = [row for row in rows if str(row.get("benchmark_name", "")) == workload_spec.benchmark_name]
     if workload_spec.model_id:
@@ -155,7 +155,7 @@ def optimize_workload(
     pruned_rows, surrogate_meta = prune_with_surrogate(
         rows,
         tier_field=tier_field,
-        top_n=max(workload_spec.prune_top_n, DEFAULT_PRUNE_TOP_N),
+        top_n=workload_spec.prune_top_n if workload_spec.prune_top_n > 0 else DEFAULT_PRUNE_TOP_N,
     )
 
     screened_pass = [
@@ -196,7 +196,7 @@ def optimize_workload(
                     candidate_id,
                     tier_name=sla_tier,
                     status="verified",
-                    gpu_cost_per_hour=workload_spec.gpu_cost_per_hour,
+                    gpu_cost_per_hour=gpu_cost_per_hour,
                 )
             )
         else:
@@ -206,7 +206,7 @@ def optimize_workload(
                     candidate_id,
                     tier_name=sla_tier,
                     status="screened",
-                    gpu_cost_per_hour=workload_spec.gpu_cost_per_hour,
+                    gpu_cost_per_hour=gpu_cost_per_hour,
                 )
             )
 
@@ -225,25 +225,23 @@ def optimize_workload(
     pareto = _pareto_front([cand for cand in (verified + screened_only) if cand.meets_tier])
     alternatives = [cand for cand in pareto if cand.candidate_id != winner.candidate_id][:3]
 
-    output_root = output_root or Path("artifacts")
-    runs_dir = output_root / "runs"
-    run_id = run_id or build_run_id(f"{workload_spec.name}-{sla_tier}")
+    decision_id = out_path.stem or build_run_id(f"{workload_spec.name}-{sla_tier}")
     created_at = created_at or now_utc_iso()
-    artifact_path = runs_dir / f"{run_id}.json"
-    ensure_parent(artifact_path)
+    ensure_parent(out_path)
 
     result = {
-        "run_id": run_id,
-        "created_at_utc": created_at,
-        "workload_name": workload_spec.name,
-        "benchmark_name": workload_spec.benchmark_name,
+        "artifact_version": "0.2",
+        "decision_id": decision_id,
+        "generated_at_utc": created_at,
+        "atlas_path": str(atlas_path),
+        "gpu_cost_per_hour": gpu_cost_per_hour,
+        "workload": asdict(workload_spec),
         "sla_tier": sla_tier,
         "sla_thresholds": SLA_TIERS[sla_tier],
         "screened_count": len(screened_unique),
         "pruned_count": len(pruned_rows),
         "discarded_guardrail_count": removed,
         "surrogate": surrogate_meta,
-        "workload_spec": asdict(workload_spec),
         "winner": asdict(winner),
         "alternatives": [asdict(cand) for cand in alternatives],
         "screened_candidates": [asdict(cand) for cand in screened_only],
@@ -256,18 +254,15 @@ def optimize_workload(
                 "throughput_stddev": stddev(sample["total_token_throughput"] for sample in winner.metrics_samples),
             },
         },
-        "commands": {
-            "report": f"perfsmith report --run-id {run_id}",
-        },
     }
 
-    with artifact_path.open("w", encoding="utf-8") as handle:
+    with out_path.open("w", encoding="utf-8") as handle:
         json.dump(result, handle, indent=2, sort_keys=True)
 
-    return {"artifact_path": str(artifact_path), "result": result}
+    return {"artifact_path": str(out_path), "result": result}
 
 
-def load_workload_spec(path: Path) -> WorkloadSpecV0:
+def load_workload_spec(path: Path) -> WorkloadSpec:
     with path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
-    return WorkloadSpecV0.from_dict(payload)
+    return WorkloadSpec.from_dict(payload)

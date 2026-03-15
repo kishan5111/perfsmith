@@ -1,0 +1,9 @@
+[
+  {
+    "model": "Qwen/Qwen3-4B",
+    "gpu_memory_utilization": 0.85,
+    "max_model_len": 1024,
+    "max_num_seqs": 16,
+    "max_num_batched_tokens": 4096
+  }
+]

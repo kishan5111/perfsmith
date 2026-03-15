@@ -1,10 +1,11 @@
-# Perfsmith SLA Pack
+# Perfsmith SLO Pack
 
-- Run ID: `fixture-short-balanced-fixed`
-- Created At (UTC): `2026-03-06T00:00:00+00:00`
+- Decision ID: `decision`
+- Generated At (UTC): `2026-03-06T00:00:00+00:00`
 - Workload: `short_qwen3`
 - Benchmark: `short`
 - SLA Tier: `balanced`
+- Atlas: `fixtures/expected_summary.csv`
 
 ## Winner
 
@@ -39,10 +40,14 @@ vllm serve Qwen/Qwen3-8B --gpu-memory-utilization 0.94 --max-model-len 1024 --ma
 
 - Cost per 1M tokens: `0.177` USD
 
+## Alternatives
+
+- `short|256|128|250|inf|1.0|0.94|1024|128|16384|Qwen/Qwen3-8B|17`: concurrency `17`, throughput `2160.508` tok/s, p99 TTFT `494.400` ms, p99 ITL `24.260` ms
+- `short|256|128|250|inf|1.0|0.94|1024|128|16384|Qwen/Qwen3-8B|1`: concurrency `1`, throughput `173.962` tok/s, p99 TTFT `41.351` ms, p99 ITL `18.775` ms
+
 ## Repro Commands
 
 ```bash
-perfsmith report --run-id fixture-short-balanced-fixed
-perfsmith report --run-id fixture-short-balanced-fixed
-# Artifact: artifacts/runs/fixture-short-balanced-fixed.json
+perfsmith report --decision decision.json --out <report.md>
+# Decision artifact: decision.json
 ```

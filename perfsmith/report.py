@@ -1,4 +1,4 @@
-"""SLA Pack markdown report generation."""
+"""SLO Pack markdown report generation."""
 
 from __future__ import annotations
 
@@ -10,15 +10,9 @@ from .constants import SLA_TIERS
 from .utils import ensure_parent, format_float
 
 
-def _load_artifact(run_id: str, output_root: Path) -> tuple[Path, dict[str, Any]]:
-    candidate = Path(run_id)
-    if candidate.exists():
-        with candidate.open("r", encoding="utf-8") as handle:
-            return candidate, json.load(handle)
-
-    artifact_path = output_root / "runs" / f"{run_id}.json"
-    with artifact_path.open("r", encoding="utf-8") as handle:
-        return artifact_path, json.load(handle)
+def load_decision(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
 
 
 def _as_vllm_flags(winner: dict[str, Any]) -> str:
@@ -41,10 +35,11 @@ def _tier_pass(ttft: float, itl: float, tier_name: str) -> bool:
     return ttft <= limits["p99_ttft_ms"] and itl <= limits["p99_itl_ms"]
 
 
-def render_report(payload: dict[str, Any], artifact_path: Path) -> str:
+def render_report(payload: dict[str, Any], decision_path: Path) -> str:
     winner = payload["winner"]
     verification = payload.get("verification", {})
     variance = verification.get("winner_variance", {})
+    workload = payload.get("workload", {})
 
     ttft = float(winner.get("p99_ttft_ms", 0.0))
     itl = float(winner.get("p99_itl_ms", 0.0))
@@ -53,13 +48,14 @@ def render_report(payload: dict[str, Any], artifact_path: Path) -> str:
     balanced_pass = _tier_pass(ttft, itl, "balanced")
 
     lines: list[str] = []
-    lines.append("# Perfsmith SLA Pack")
+    lines.append("# Perfsmith SLO Pack")
     lines.append("")
-    lines.append(f"- Run ID: `{payload['run_id']}`")
-    lines.append(f"- Created At (UTC): `{payload.get('created_at_utc', 'n/a')}`")
-    lines.append(f"- Workload: `{payload.get('workload_name', 'n/a')}`")
-    lines.append(f"- Benchmark: `{payload.get('benchmark_name', 'n/a')}`")
+    lines.append(f"- Decision ID: `{payload.get('decision_id', decision_path.stem)}`")
+    lines.append(f"- Generated At (UTC): `{payload.get('generated_at_utc', 'n/a')}`")
+    lines.append(f"- Workload: `{workload.get('name', 'n/a')}`")
+    lines.append(f"- Benchmark: `{workload.get('benchmark_name', 'n/a')}`")
     lines.append(f"- SLA Tier: `{payload.get('sla_tier', 'n/a')}`")
+    lines.append(f"- Atlas: `{payload.get('atlas_path', 'n/a')}`")
     lines.append("")
 
     lines.append("## Winner")
@@ -90,42 +86,40 @@ def render_report(payload: dict[str, Any], artifact_path: Path) -> str:
     lines.append("## Verification Variance")
     lines.append("")
     lines.append(f"- Verification runs: `{winner.get('verification_runs', 0)}`")
-    lines.append(
-        f"- p99 TTFT stddev: `{format_float(variance.get('p99_ttft_stddev_ms'), 3)}` ms"
-    )
+    lines.append(f"- p99 TTFT stddev: `{format_float(variance.get('p99_ttft_stddev_ms'), 3)}` ms")
     lines.append(f"- p99 ITL stddev: `{format_float(variance.get('p99_itl_stddev_ms'), 3)}` ms")
-    lines.append(
-        f"- Throughput stddev: `{format_float(variance.get('throughput_stddev'), 3)}` tok/s"
-    )
+    lines.append(f"- Throughput stddev: `{format_float(variance.get('throughput_stddev'), 3)}` tok/s")
     lines.append("")
 
     lines.append("## Cost Estimate")
     lines.append("")
-    lines.append(
-        f"- Cost per 1M tokens: `{format_float(winner.get('cost_per_1m_tokens_usd'), 3)}` USD"
-    )
+    lines.append(f"- Cost per 1M tokens: `{format_float(winner.get('cost_per_1m_tokens_usd'), 3)}` USD")
     lines.append("")
+
+    if payload.get("alternatives"):
+        lines.append("## Alternatives")
+        lines.append("")
+        for alt in payload["alternatives"]:
+            lines.append(
+                f"- `{alt['candidate_id']}`: concurrency `{alt['max_concurrency']}`, throughput `{format_float(alt.get('total_token_throughput'), 3)}` tok/s, p99 TTFT `{format_float(alt.get('p99_ttft_ms'), 3)}` ms, p99 ITL `{format_float(alt.get('p99_itl_ms'), 3)}` ms"
+            )
+        lines.append("")
 
     lines.append("## Repro Commands")
     lines.append("")
     lines.append("```bash")
-    lines.append(f"perfsmith report --run-id {payload['run_id']}")
-    lines.append(payload.get("commands", {}).get("report", ""))
-    lines.append(f"# Artifact: {artifact_path}")
+    decision_label = decision_path.name
+    lines.append(f"perfsmith report --decision {decision_label} --out <report.md>")
+    lines.append(f"# Decision artifact: {decision_label}")
     lines.append("```")
     lines.append("")
 
     return "\n".join(lines)
 
 
-def write_report(run_id: str, output_root: Path | None = None, output_path: Path | None = None) -> Path:
-    output_root = output_root or Path("artifacts")
-    artifact_path, payload = _load_artifact(run_id, output_root)
-    report_text = render_report(payload, artifact_path)
-
-    if output_path is None:
-        output_path = output_root / "reports" / f"{payload['run_id']}.md"
-
+def write_report(decision_path: Path, output_path: Path) -> Path:
+    payload = load_decision(decision_path)
+    report_text = render_report(payload, decision_path)
     ensure_parent(output_path)
     with output_path.open("w", encoding="utf-8") as handle:
         handle.write(report_text)

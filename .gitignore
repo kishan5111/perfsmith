@@ -1,10 +1,7 @@
-context
 artifacts/
+notes/
 .DS_Store
 .venv/
 __pycache__/
 *.pyc
 .pytest_cache/
-
-# Keep golden fixtures tracked
-!fixtures/

@@ -1,5 +1,3 @@
-# Day-0 image: official vLLM runtime plus the local Perfsmith CLI.
-# Day-0 image is pinned to vLLM 0.17.1 by default.
 ARG VLLM_IMAGE=vllm/vllm-openai:v0.17.1
 FROM ${VLLM_IMAGE}
 
@@ -13,7 +11,7 @@ ENV PYTHONUNBUFFERED=1 \
 COPY pyproject.toml README.md ./
 COPY perfsmith ./perfsmith
 COPY fixtures ./fixtures
-COPY day_0 ./day_0
+COPY recipes ./recipes
 
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install -e .
