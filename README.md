@@ -81,17 +81,6 @@ Perfsmith includes an early trace replay mode for agent-style workflows where to
 perfsmith replay-trace --trace fixtures/trace/agent_trace.json --stub fixtures/trace/tool_stub.json
 ```
 
-## Repository Layout
-
-- `perfsmith/`: core package and CLI
-- `recipes/vllm/`: reproducible benchmark recipe files and wrappers
-- `reports/`: published experiment outputs, small files only
-- `fixtures/`: tiny committed artifacts for deterministic tests
-- `tests/`: test suite
-- `artifacts/`: ignored local benchmark outputs and generated reports
-
-Do not commit raw benchmark artifacts. Keep them under `artifacts/` locally or publish them separately as release assets.
-
 ## Status
 
 Active development.
@@ -101,7 +90,7 @@ Current v0 focus:
 - vLLM-first ingestion and deterministic decision/reporting
 - strict and balanced SLO tiers with verification flow
 - workload specs that reflect real length distributions
-- reproducible run recipes that can be lifted onto Vast or other GPU hosts
+- reproducible run recipes that can be lifted onto GPU hosts
 
 Planned next:
 
@@ -112,8 +101,3 @@ Planned next:
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-
-## Local Result Intake
-
-Bring raw result zips back from Vast into `incoming/` locally. That directory stays ignored. From there, summarize into `artifacts/`, review the decision/report outputs, and only commit the small published files under `reports/`.
