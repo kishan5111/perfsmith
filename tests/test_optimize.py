@@ -7,7 +7,7 @@ import pytest
 from perfsmith.optimize import load_workload_spec, optimize_atlas
 
 
-ATLAS = Path("fixtures/expected_summary.csv")
+ATLAS = Path("fixtures/atlas/optimizer_tiered.csv")
 
 
 def test_optimize_balanced_and_strict_winners_differ(tmp_path: Path) -> None:
@@ -17,24 +17,25 @@ def test_optimize_balanced_and_strict_winners_differ(tmp_path: Path) -> None:
         atlas_path=ATLAS,
         workload_spec=spec,
         sla_tier="balanced",
-        gpu_cost_per_hour=1.75,
+        gpu_cost_per_hour=0.322,
         out_path=tmp_path / "balanced.json",
-        created_at="2026-03-06T00:00:00+00:00",
+        created_at="2026-03-15T00:00:00+00:00",
     )["result"]
 
     strict = optimize_atlas(
         atlas_path=ATLAS,
         workload_spec=spec,
         sla_tier="strict",
-        gpu_cost_per_hour=1.75,
+        gpu_cost_per_hour=0.322,
         out_path=tmp_path / "strict.json",
-        created_at="2026-03-06T00:00:00+00:00",
+        created_at="2026-03-15T00:00:00+00:00",
     )["result"]
 
     assert balanced["winner"]["status"] == "verified"
     assert strict["winner"]["status"] == "verified"
-    assert balanced["winner"]["max_concurrency"] == 23
-    assert strict["winner"]["max_concurrency"] == 17
+    assert balanced["winner"]["max_concurrency"] == 2
+    assert strict["winner"]["max_concurrency"] == 2
+    assert balanced["winner"]["candidate_id"] != strict["winner"]["candidate_id"]
     assert len(balanced["alternatives"]) >= 1
     assert len(balanced["screened_candidates"]) >= 1
 
@@ -47,9 +48,9 @@ def test_guardrail_rejects_incompatible_model_len(tmp_path: Path) -> None:
             atlas_path=ATLAS,
             workload_spec=spec,
             sla_tier="balanced",
-            gpu_cost_per_hour=1.75,
+            gpu_cost_per_hour=0.322,
             out_path=tmp_path / "guardrail.json",
-            created_at="2026-03-06T00:00:00+00:00",
+            created_at="2026-03-15T00:00:00+00:00",
         )
 
 
@@ -61,7 +62,7 @@ def test_mandatory_verify_run_enforced(tmp_path: Path) -> None:
             atlas_path=ATLAS,
             workload_spec=spec,
             sla_tier="balanced",
-            gpu_cost_per_hour=1.75,
+            gpu_cost_per_hour=0.322,
             out_path=tmp_path / "verify_fail.json",
-            created_at="2026-03-06T00:00:00+00:00",
+            created_at="2026-03-15T00:00:00+00:00",
         )

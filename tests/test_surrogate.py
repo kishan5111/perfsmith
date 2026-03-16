@@ -7,7 +7,7 @@ from perfsmith.surrogate import prune_with_surrogate
 
 
 def test_surrogate_pruning_keeps_top_balanced_candidates() -> None:
-    rows = load_table(Path("fixtures/expected_summary.csv"))
+    rows = load_table(Path("fixtures/atlas/optimizer_tiered.csv"))
     pruned, metadata = prune_with_surrogate(rows, tier_field="meets_balanced", top_n=3)
 
     passing = [row for row in rows if row["meets_balanced"]]

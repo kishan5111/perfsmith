@@ -48,7 +48,7 @@ Perfsmith can work purely from existing benchmark artifacts, either as a zip fil
 
 ```bash
 python3 -m pip install -e .
-perfsmith summarize --input fixtures/perfsmith_sla_v0_sample.zip --out artifacts/atlas.csv
+perfsmith summarize --input fixtures/runs/qwen3_4b_5090_short_smoke.raw.zip --out artifacts/atlas.csv
 perfsmith optimize --atlas artifacts/atlas.csv --workload fixtures/workloads/short_balanced.json --sla-tier balanced --gpu-cost-per-hour 1.75 --out artifacts/decision.json
 perfsmith report --decision artifacts/decision.json --out artifacts/slo_pack.md
 ```
@@ -112,3 +112,8 @@ Planned next:
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+## Local Result Intake
+
+Bring raw result zips back from Vast into `incoming/` locally. That directory stays ignored. From there, summarize into `artifacts/`, review the decision/report outputs, and only commit the small published files under `reports/`.

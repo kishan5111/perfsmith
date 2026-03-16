@@ -6,8 +6,8 @@ from perfsmith.optimize import load_workload_spec, optimize_atlas
 from perfsmith.report import write_report
 
 
-EXPECTED = Path("fixtures/expected_report_fixed.md")
-ATLAS = Path("fixtures/expected_summary.csv")
+EXPECTED = Path("fixtures/reports/optimizer_tiered.balanced.md")
+ATLAS = Path("fixtures/atlas/optimizer_tiered.csv")
 
 
 def test_report_matches_snapshot(tmp_path: Path) -> None:
@@ -18,9 +18,9 @@ def test_report_matches_snapshot(tmp_path: Path) -> None:
         atlas_path=ATLAS,
         workload_spec=spec,
         sla_tier="balanced",
-        gpu_cost_per_hour=1.75,
+        gpu_cost_per_hour=0.322,
         out_path=decision_path,
-        created_at="2026-03-06T00:00:00+00:00",
+        created_at="2026-03-15T00:00:00+00:00",
     )
 
     report_path = write_report(decision_path, tmp_path / "slo_pack.md")
