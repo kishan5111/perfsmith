@@ -1,0 +1,14 @@
+{
+  "name": "qwen3_5_4b_text_only_short_search_v1",
+  "benchmark_name": "short",
+  "expected_max_input_tokens": 256,
+  "expected_max_output_tokens": 128,
+  "num_prompts": 96,
+  "request_rate": "inf",
+  "burstiness": 1.0,
+  "concurrency_values": [8, 16, 24, 32, 48, 64],
+  "top_k_verify": 5,
+  "prune_top_n": 16,
+  "verification_min_runs": 1,
+  "model_id": "Qwen/Qwen3.5-4B"
+}

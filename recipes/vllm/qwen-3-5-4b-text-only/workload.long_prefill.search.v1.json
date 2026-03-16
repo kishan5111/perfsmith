@@ -1,0 +1,14 @@
+{
+  "name": "qwen3_5_4b_text_only_long_prefill_search_v1",
+  "benchmark_name": "long_prefill",
+  "expected_max_input_tokens": 2048,
+  "expected_max_output_tokens": 128,
+  "num_prompts": 24,
+  "request_rate": "inf",
+  "burstiness": 1.0,
+  "concurrency_values": [1, 2, 4, 8, 12],
+  "top_k_verify": 5,
+  "prune_top_n": 16,
+  "verification_min_runs": 1,
+  "model_id": "Qwen/Qwen3.5-4B"
+}

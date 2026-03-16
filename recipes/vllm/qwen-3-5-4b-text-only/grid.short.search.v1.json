@@ -1,0 +1,114 @@
+[
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.90,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 4096
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.90,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 8192
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.90,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 12288
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.90,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 16384
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.94,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 4096
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.94,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 8192
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.94,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 12288
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.94,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 16384
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.97,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 4096
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.97,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 8192
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.97,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 12288
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.97,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 16384
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.99,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 4096
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.99,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 8192
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.99,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 12288
+  },
+  {
+    "model": "Qwen/Qwen3.5-4B",
+    "gpu_memory_utilization": 0.99,
+    "max_model_len": 768,
+    "max_num_seqs": 48,
+    "max_num_batched_tokens": 16384
+  }
+]
