@@ -42,7 +42,7 @@ perfsmith run \
   --grid recipes/vllm/qwen-3-5-4b-text-only/grid.short.search.v1.json \
   --out artifacts/qwen3_5_4b_text_only/short_search_v1 \
   --gpu-cost-per-hour "$GPU_COST_PER_HOUR" \
-  --server-extra-args "--language-model-only --no-enable-prefix-caching --enforce-eager"
+  --server-extra-args "--language-model-only --no-enable-prefix-caching"
 ```
 
 Long-prefill:
@@ -54,7 +54,7 @@ perfsmith run \
   --grid recipes/vllm/qwen-3-5-4b-text-only/grid.long_prefill.search.v1.json \
   --out artifacts/qwen3_5_4b_text_only/long_prefill_search_v1 \
   --gpu-cost-per-hour "$GPU_COST_PER_HOUR" \
-  --server-extra-args "--language-model-only --no-enable-prefix-caching --enforce-eager"
+  --server-extra-args "--language-model-only --no-enable-prefix-caching"
 ```
 
 ## Why These Grids

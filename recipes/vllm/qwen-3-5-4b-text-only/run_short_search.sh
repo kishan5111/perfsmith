@@ -14,4 +14,4 @@ perfsmith run \
   --out "$OUT" \
   --gpu-cost-per-hour "$GPU_COST_PER_HOUR" \
   --num-runs "$NUM_RUNS" \
-  --server-extra-args "--language-model-only --no-enable-prefix-caching --enforce-eager"
+  --server-extra-args "--language-model-only --no-enable-prefix-caching"

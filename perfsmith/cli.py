@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--server-host", default="127.0.0.1")
     run.add_argument("--server-port", type=int, default=8000)
     run.add_argument("--server-ready-timeout", type=int, default=600)
-    run.add_argument("--server-extra-args", default="--no-enable-prefix-caching --enforce-eager")
+    run.add_argument("--server-extra-args", default="--no-enable-prefix-caching")
     run.add_argument("--bench-extra-args", default="")
 
     optimize = sub.add_parser("optimize", help="Pick a winner from a summarized atlas")

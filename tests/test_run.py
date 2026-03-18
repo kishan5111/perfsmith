@@ -8,7 +8,7 @@ from perfsmith.run import run_experiment
 
 
 class FakePopen:
-    def __init__(self, cmd, stdout=None, stderr=None, text=None):
+    def __init__(self, cmd, stdout=None, stderr=None, text=None, **kwargs):
         self.cmd = cmd
         self.returncode = None
 

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import shlex
 import shutil
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -92,13 +94,33 @@ def _wait_for_server(host: str, port: int, timeout: int, process: subprocess.Pop
 
 
 def _stop_server(process: subprocess.Popen[Any] | None) -> None:
-    if process is None or process.poll() is not None:
+    if process is None:
         return
-    process.terminate()
+    if process.poll() is not None:
+        return
+
+    pid = getattr(process, "pid", None)
+    if pid is None:
+        process.terminate()
+        try:
+            process.wait(timeout=20)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=10)
+        return
+
+    try:
+        os.killpg(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        return
+
     try:
         process.wait(timeout=20)
     except subprocess.TimeoutExpired:
-        process.kill()
+        try:
+            os.killpg(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            return
         process.wait(timeout=10)
 
 
@@ -132,7 +154,13 @@ def _start_server(
     cmd += extra_args
 
     handle = log_path.open("w", encoding="utf-8")
-    process = subprocess.Popen(cmd, stdout=handle, stderr=subprocess.STDOUT, text=True)
+    process = subprocess.Popen(
+        cmd,
+        stdout=handle,
+        stderr=subprocess.STDOUT,
+        text=True,
+        start_new_session=True,
+    )
     _wait_for_server(host, port, timeout, process, log_path)
     return process
 
@@ -198,7 +226,7 @@ def run_experiment(
     server_host: str = "127.0.0.1",
     server_port: int = 8000,
     server_ready_timeout: int = 600,
-    server_extra_args: str = "--no-enable-prefix-caching --enforce-eager",
+    server_extra_args: str = "--no-enable-prefix-caching",
     bench_extra_args: str = "",
     run_stamp: str | None = None,
 ) -> dict[str, Any]:
